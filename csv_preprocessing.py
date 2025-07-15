@@ -10,8 +10,7 @@ class Entry:
 entries = []
 input_file = "test_articles.csv"
 output_file = 'output/output.csv'
-print(csv.list_dialects())
-with open(input_file, 'r', newline = '', encoding = 'latin1') as csvfile:
+with open(input_file, 'r', newline = '', encoding = 'utf-8', errors='ignore') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter = ',')
     fields = next(csv_reader)
     for row in csv_reader:
@@ -29,7 +28,7 @@ with open(input_file, 'r', newline = '', encoding = 'latin1') as csvfile:
             continue
         news_entry = Entry(id=id, content = content, company_name = company, entry_id = entry_id)
         entries.append(news_entry)
-with open(output_file, 'w', encoding = 'latin1') as csvfile:
+with open(output_file, 'w', encoding = 'utf-8') as csvfile:
     rows = []
     csvwriter = csv.writer(csvfile, delimiter = ',', dialect = 'unix')
     csvwriter.writerow(['id', 'content', 'company_name', 'entry_id'])
