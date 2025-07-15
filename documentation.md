@@ -64,6 +64,13 @@ this gave the following output:
   "3": []
 }
 ```
+which is good.
+
+However, sometimes the character ” would appear as â in the output. I found out that
+this is due to opening an utf-8 encoded file as a latin-1 encoded file, so I implemented an
+encoding detection function using chardet, and the problem was solved.
+
+
 
 
 
