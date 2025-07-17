@@ -8,7 +8,7 @@ Basically, I set up those standards to filter invalid entries:
 
 The preprocessing script is in csv_preprocessing.py. After running the script, I was left with 4135 entries.
 
-**Method 1: Using a cheaper alternative to Chatgpt, Deepseek, to extract the quotes.**
+### **Method 1:Deepseek**
 
 Tried with the following system prompt:
 
@@ -70,8 +70,33 @@ However, sometimes the character ” would appear as â in the output. I fou
 this is due to opening an utf-8 encoded file as a latin-1 encoded file, so I implemented an
 function that re-encodes the input file as UTF-8, and the problem was solved.
 
+Then, I wrote a program to automatically reads from csv files and invokes deepseek
+api. After some testing, I found out that the output quotes are related to all companies
+present in the article, rather than related to a single company. It turns out that I forgot to
+include the name of the company in my prompt. So I added the company name in the prompt
+and everything is fixed.
 
 
+### **Method 2: Sentence Embedding + Semantic Analysis**
 
+I tried another method: Sentence Embedding.
+
+Sentence embedding converts a sentence into a vector in high dimensional space,
+so we can search for answers of the questions by calculating the similarity of the 
+embedding vectors of sentences in the article and the embedding vector of query sentence.
+
+However, this method has a lot of limitations. For example, for the query sentence below,
+
+>AGC has mentioned/announced that it will stop its business in Russia.
+
+The embeddings gave a similarity of 0.4 on the sentence
+
+>Glass giant AGC Inc. said on Feb. 8 that it started considering selling its glass manufacturing and sales operations in Russia.
+
+and gave a similarity of 0.48 on the sentence
+
+> AGC has two plants in Russia.
+
+While it is clearly visible that the former sentence is more related to the question.
 
 

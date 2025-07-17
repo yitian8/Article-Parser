@@ -1,5 +1,9 @@
 import csv
 import re
+
+from deepseek_api import detect_encoding
+
+
 class Entry:
     def __init__(self,id, content, company_name,entry_id):
         self.id = id
@@ -9,11 +13,13 @@ class Entry:
 
 entries = []
 input_file = "test_articles.csv"
-output_file = 'output/output.csv'
+print(detect_encoding(input_file))
+output_file = 'output/dataset_medium.csv'
 with open(input_file, 'r', newline = '', encoding = 'utf-8', errors='ignore') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter = ',')
     fields = next(csv_reader)
-    for row in csv_reader:
+    cnt = 0
+    for (index, row) in enumerate(csv_reader):
         if len(row) < 4:
             continue
         if len(row) >= 5 and row[4]:
@@ -26,8 +32,11 @@ with open(input_file, 'r', newline = '', encoding = 'utf-8', errors='ignore') as
             continue
         if content.startswith('Content requires') or (not content) or (not company):
             continue
+        cnt += 1
         news_entry = Entry(id=id, content = content, company_name = company, entry_id = entry_id)
         entries.append(news_entry)
+        if (cnt >= 500):
+            break
 with open(output_file, 'w', encoding = 'utf-8') as csvfile:
     rows = []
     csvwriter = csv.writer(csvfile, delimiter = ',', dialect = 'unix')
