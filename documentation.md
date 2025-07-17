@@ -1,6 +1,10 @@
-Core task: extracting answers for certain questions from articles
+# Quote Extraction
 
-Data preprocessing: Some rows are just “content requires subscription”, and some other rows contain messed up formats. I have to clean the whole dataset before moving on. Also have to determine encoding type.
+## Core task: extracting answers for certain questions from articles
+
+## **Data preprocessing**
+
+Some rows are just “content requires subscription”, and some other rows contain messed up formats. I have to clean the whole dataset before moving on.
 
 Basically, I set up those standards to filter invalid entries:
 1. each line should only contain 4 elements, which are id, content, company_name and entry_id.
@@ -8,9 +12,20 @@ Basically, I set up those standards to filter invalid entries:
 
 The preprocessing script is in csv_preprocessing.py. After running the script, I was left with 4135 entries.
 
-### **Method 1:Deepseek**
+## **Method 1:Deepseek**
 
-Tried with the following system prompt:
+Since its release in 2025 March 24th, Deepseek V3-0324 has been proven to be a cheap alternative for SOTA non-thinking LLMs
+such as GPT-4.1 or claude 3.7 Sonnet, while having similar performances. In this project, I will use
+Deepseek to extract quotes for me by calling Deepseek api provided by api.deepseek.com. 
+
+The reason I chose a non-thinking LLM is thinking LLMs, such as Deepseek-R1-0528 or Gemini 2.5 Pro tend to "overthink" 
+and hallucinate non-existent quotes while performing simple tasks such as parsing articles.
+Apart from hallucinations, thinking LLMs are also worse at following instructions such as "Your output must be in JSON format."
+While non-thinking LLMs can follow this instruction hundreds of times in a row without failing once, 
+thinking LLMs fail quite often.
+
+
+This is my initial system prompt:
 
     You are a professional market analyst. You are asked to process certain articles to extract answer for certain questions.
     
@@ -49,7 +64,7 @@ Which seems decent.
 
 Then I tried to force the output in Json format, so the outputs can be processed by automated scripts.
 
-this gave the following output: 
+This gave the following output: 
 
 ```json
 {
@@ -71,13 +86,46 @@ this is due to opening an utf-8 encoded file as a latin-1 encoded file, so I imp
 function that re-encodes the input file as UTF-8, and the problem was solved.
 
 Then, I wrote a program to automatically reads from csv files and invokes deepseek
-api. After some testing, I found out that the output quotes are related to all companies
+api, then writes out found quotes to a separate csv file, which is structured like this:
+
+### **Output structure**
+
+```
+| id | content | company_name | entry_id | question_1 | question_2 | question_ 3 |
+----------------------------------------------------------------------------------
+|    |         |              |          |            |            |             |
+
+```
+>Question 1 corresponds to quotes for "(Name of company) has mentioned/announced that it will stop its business in Russia."
+> 
+>Question 2 corresponds to quotes for "(Name of company) has largely maintained its sales in Russia."
+> 
+>Question 3 corresponds to quotes for "(Name of company) has continued to export its products to Russia."
+
+If multiple quotes are found for one question, each quote is surrounded by
+single quotation marks, and quotes are separated by the newline character '\n'.
+
+So the quotes are similar to this structure:
+
+```
+'quote 1'
+'quote 2'
+'quote 3'
+...
+```
+
+### Problem encountered: unspecified result
+
+After some testing, I found out that the output quotes are related to all companies
 present in the article, rather than related to a single company. It turns out that I forgot to
 include the name of the company in my prompt. So I added the company name in the prompt
 and everything is fixed.
 
+I also made small modifications to the system prompt to make the whole inference process more robust.
+The updated system prompt is in Prompts/system_prompt.txt.
 
-### **Method 2: Sentence Embedding + Semantic Analysis**
+
+## **Method 2: Sentence Embedding + Semantic Analysis**
 
 I tried another method: Sentence Embedding.
 
@@ -98,5 +146,10 @@ and gave a similarity of 0.48 on the sentence
 > AGC has two plants in Russia.
 
 While it is clearly visible that the former sentence is more related to the question.
+
+Each embedding only carry the meanings of that exact sentence without any context.
+This can be problematic since we have to infer its meaning from the context for
+sentences similar to "This company has stopped exporting its products to Russia."
+
 
 
