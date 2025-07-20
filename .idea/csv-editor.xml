@@ -59,6 +59,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\results\results_embedding.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\results\results_medium.csv">
           <value>
             <Attribute>

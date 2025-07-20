@@ -171,9 +171,89 @@ graph TD
     H --> I[Output Structured Quotes]
 
 ```
+### Coreference Resolution
 
+Coreference Resolution replaces coreferences with names of objects.
+For example, in the sentence "The dog is happy. It is running fast",
+coreference resolution models replaces "It" with "the dog".
+
+Unfortunately, there isn't any reliable Coreference Resolution 
+library that supports Russian and Ukrainian, so I have to skip this part.
+
+### Named Entity Extraction
+
+Named entity extraction models extract entities from an article. For example,
+for the SpaCy library I use, an example output looks like this:
+
+```
+Name                 |Tag      |Start/End
+------------------------------------------
+japan                GPE        10 15
+Japanese             NORP       51 59
+Russia               GPE        98 104
+The Asahi Shimbun: Breaking News ORG        107 139
+Japan News           ORG        141 151
+Analysis             ORG        156 164
+Japanese             NORP       165 173
+Russia               GPE        212 218
+February 24, 2023    DATE       237 254
+Uniqlo               ORG        270 276
+Moscow               GPE        303 309
+April 10, 2022       DATE       335 349
+Hitoki Nakagawa      PERSON     352 367
+one-year             DATE       376 384
+Ukraine              GPE        416 423
+Japanese             NORP       425 433
+```
+Name is the name of the entity, tag indicates the type of the entity, and
+Start/End indicates where the entity appears in the article.
+
+Because we are looking for companies, I first filter out non-companies by
+choosing entities that has the "ORG" tag, which leaves me with organizations.
+
+Then, I use fuzzy matching to select entities that are most possibly
+related with
+the company that we are interested in. Fuzzy matching measures the 
+similarity between two words. For example, "AGC INC." and "AGC" have
+high similarity, but "AGC" and "Sony" have low similarity.
+
+For example, if I want to know where the company 'agc' appears in 
+a list which looks like this will be returned:
+
+```
+Name                 Tag        Start/End
+------------------------------------------
+AGC Inc.             ORG        952  960
+AGC                  ORG        1324 1327
+AGC                  ORG        1488 1491
+```
+
+Then, I can select sentences that contains the name of organizations,
+and use Extractive Question Answering to verify if the selected 
+sentences contain the answer.
+
+In Extractive QA, a score is calculated for each pair of question
+and answer. A higher score indicates higher relevancy for the answer.
+Therefore, I can select the most relevant quotes based on their 
+scores.
+
+I have implemented this workflow in parse_article_embedding.py,
+embedding.py and language_router.py. 
+
+### Limitations
+
+This method has its limitations compared to LLMs. First of all, because there are no NLP libraries
+for certain languages, such as Persian and Croatian, I have to skip some articles.
+Secondly, even with the combination of entity extraction and Extractive QA,
+the boundary between "good answers" and "bad answers" is still ambiguous.
+So by having stricter limitations for the quotes, this workflow would
+inevitably discard some quotes that are actually related to the questions.
+LLMs, on the other hand, are much more adaptive, knowing when to include 
+quotes in answers and when to exclude them.
 
 ## Summary
 
-## References
+In conclusion, I implemented a workflow that can extract quotes related to
+certain questions from an article, using LLM and non-LLM methods. 
+
 

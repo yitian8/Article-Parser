@@ -4,8 +4,14 @@ from langdetect import detect
 import re
 import spacy
 from rapidfuzz import fuzz
+import et_dep_ud_sm
+from language_router import routeLanguage
+import tensorflow as tf
+from sentence_transformers.cross_encoder import CrossEncoder
+from transformers import pipeline
+import json
 # Load pre-trained universal sentence encoder model
-embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
+
 
 def normalize(name):
     name = name.lower().strip()
@@ -22,18 +28,35 @@ def normalize(name):
     name = re.sub(r'\s+', ' ', name).strip()  # Collapse whitespace
     return name
 
-def extractQuotes(company, article, question):
-    print('')
+def extractQuotes(company, article, questions, qa_pipeline):
+    results = {}
+    filtered_sentences = filterSentences(article, company)
+    for i, question in enumerate(questions):
+        question_processed = question.replace('(__place_holder__)', company)
+        answers = []
+        for context in filtered_sentences:
+            result = qa_pipeline(question=question, context=context)
+            if result['score'] >= 0.3:
+                answers.append(context)
+        results[str(i+1)] = answers
+    return results
 
-def extractEntitity(aritcle, type = 'ORG', name = None, threshold = 70):
+def filterSentences(article, name):
     nlp = None
-    language = detect(aritcle)
-    if language == 'en':
-        nlp = spacy.load("en_core_web_sm")
-    elif language == 'ru':
-        nlp = spacy.load("ru_core_news_sm")
-    elif language == 'uk':
-        nlp = spacy.load("uk_core_web_sm")
+    language = detect(article)
+    print(language)
+    nlp = routeLanguage(article)
+    if nlp is None:
+        return []
+    Sentences = re.split(r'(?<=[^A-Z].[.?]) +(?=[A-Z])', article)
+    results = []
+    for sentence in Sentences:
+        entities = extractEntitity(sentence, name = name, nlp = nlp)
+        if entities:
+            results.append(sentence)
+    return results
+
+def extractEntitity(aritcle, type = 'ORG', name = None, threshold = 70, nlp = spacy.load('en_core_web_sm')):
     doc = nlp(aritcle)
     entries = []
     for ent in doc.ents:
@@ -41,31 +64,12 @@ def extractEntitity(aritcle, type = 'ORG', name = None, threshold = 70):
             if name is not None:
                 org_name = normalize(ent.text)
                 similarity = fuzz.partial_ratio(org_name, name.lower())
-                print(ent.text.ljust(20, ' '), similarity)
-                print(org_name)
+
                 if similarity >= threshold:
                     entries.append(ent)
+                    # print(ent.text.ljust(20, ' '),
+                    #       ent.label_.ljust(10, ' '),
+                    #       ent.start_char, ent.end_char)
             else:
                 entries.append(ent)
     return entries
-
-user_prompt_path = 'Prompts/user_prompt.txt'
-user_prompt = ''
-with open(user_prompt_path, 'r', newline = '', encoding = 'utf-8') as user:
-    user_prompt = user.read()
-Question = ['(__place_holder__) has continued to export its products to Russia.',
-            '(__place_holder__) has mentioned/announced that it will stop its business in Russia.'
-            '(__place_holder__) has continued to export its products to Russia.']
-#AGC has mentioned/announced that it will stop its business in Russia.
-#.
-Sentences = re.split(r'(?<=[^A-Z].[.?]) +(?=[A-Z])', user_prompt)
-extractEntitity(user_prompt, name = 'japan tobacco international')
-query = embed(Question)
-embeddings = embed(Sentences)
-
-
-# for i in range(len(Sentences)):
-#     cosine_loss = tf.keras.losses.CosineSimilarity(axis=-1, reduction='none')
-#     similarity = -cosine_loss(query[0], embeddings[i])
-#     print(Sentences[i])
-#     print(str(similarity)+'\n')
