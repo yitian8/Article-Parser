@@ -16,14 +16,13 @@ The preprocessing script is in csv_preprocessing.py. After running the script, I
 
 Since its release in 2025 March 24th, Deepseek V3-0324 has been proven to be a cheap alternative for SOTA non-thinking LLMs
 such as GPT-4.1 or claude 3.7 Sonnet, while having similar performances. In this project, I will use
-Deepseek to extract quotes for me by calling Deepseek api provided by api.deepseek.com. 
+Deepseek to extract quotes for me by calling [Deepseek api](https://api-docs.deepseek.com/).
 
 The reason I chose a non-thinking LLM is thinking LLMs, such as Deepseek-R1-0528 or Gemini 2.5 Pro tend to "overthink" 
 and hallucinate non-existent quotes while performing simple tasks such as parsing articles.
 Apart from hallucinations, thinking LLMs are also worse at following instructions such as "Your output must be in JSON format."
 While non-thinking LLMs can follow this instruction hundreds of times in a row without failing once, 
 thinking LLMs fail quite often.
-
 
 This is my initial system prompt:
 
@@ -151,5 +150,30 @@ Each embedding only carry the meanings of that exact sentence without any contex
 This can be problematic since we have to infer its meaning from the context for
 sentences similar to "This company has stopped exporting its products to Russia."
 
+After doing some research, I came up with a possible solution that uses a combination
+of named entity extraction, sentence embedding and extractive QA, along with coreference
+resolution. 
 
+Basically, the workflow looks like this:
+
+```mermaid
+graph TD
+    A[Input Article] --> B[Preprocessing & Segmentation]
+    J[Coreference Resolution] --> C
+    K[Spacy Library] ---> C
+    L[Tensorflow Hub] ---> E
+    B --> C[Named entity recognition]
+    C --> D[Filter Segments Containing Company]
+    D --> E[Obtain Embedding Vectors]
+    E --> F[Semantic Similarity Scoring]
+    F --> G[Select Relevant Quotes]
+    G --> H[Extractive QA]
+    H --> I[Output Structured Quotes]
+
+```
+
+
+## Summary
+
+## References
 

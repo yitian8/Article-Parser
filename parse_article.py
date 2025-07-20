@@ -17,28 +17,31 @@ def prepresponse(input):
 
 
 if __name__ == '__main__':
-    # while True:
-    #     current_time = datetime.now()
-    #     if current_time.hour == 0 and current_time.minute >= 30:
-    #         break
-    #     time.sleep(30)
-    #     print('checking time')
+    while True:
+        current_time = datetime.now()
+        if current_time.hour == 0 and current_time.minute >= 30:
+            break
+        time.sleep(30)
+        print('checking time')
 
     logging.basicConfig(filename='output/test.log', format='%(asctime)s %(message)s', filemode='w')
     logger = logging.getLogger()
     with open('key.env', 'r', newline='') as system:
         api_key = system.read()
-    database = 'output/dataset_medium.csv'
-    output = 'results/results_medium.csv'
+    database = 'output/dataset_remaining.csv'
+    output = 'results/results_remaining.csv'
     client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
     rows = []
+    with open(database, 'r', newline = '', encoding = 'utf-8') as file:
+        csv_reader = csv.reader(file, delimiter=',')
+        length = sum(1 for line in csv_reader)
     with open(database, 'r', newline = '', encoding = 'utf-8') as csvfile:
         csv_reader = csv.reader(csvfile, delimiter = ',')
         outputfile = open(output, 'w', newline = '', encoding = 'utf-8')
         csv_writer = csv.writer(outputfile, delimiter = ',', dialect = 'unix')
         csv_writer.writerow(['id', 'content', 'company_name', 'entry_id', 'question_1', 'question_2', 'question_3'])
         fields = next(csv_reader)
-        for row in csv_reader:
+        for (i, row) in enumerate(csv_reader):
             content = row[1]
             company_name = row[2]
             prompt = ('company:' + '\n' + company_name + '\n\n' + 'article:' + '\n' + content)
@@ -54,6 +57,6 @@ if __name__ == '__main__':
                 logger.error(result)
                 logger.error('parse error')
                 continue
-            print(result)
+            print('Processed articles: ' + str(i + 1) + '/' + str(length))
             csv_writer.writerow(row)
 

@@ -3,14 +3,21 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="\a.csv">
+        <entry key="\output\dataset_medium.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
             </Attribute>
           </value>
         </entry>
-        <entry key="\output\dataset_medium.csv">
+        <entry key="\output\dataset_remaining.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\output\output.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -53,6 +60,13 @@
           </value>
         </entry>
         <entry key="\results\results_medium.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\results\results_remaining.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
