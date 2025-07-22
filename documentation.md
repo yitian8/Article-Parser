@@ -251,6 +251,29 @@ inevitably discard some quotes that are actually related to the questions.
 LLMs, on the other hand, are much more adaptive, knowing when to include 
 quotes in answers and when to exclude them.
 
+## Translation
+
+I used Google Translate API to translate the quotes.
+
+### **Output structure**
+
+```
+| id | content | company_name | entry_id | question_1 | question_2 | question_3 | question_1_translated | question_2_translated | question_3_translated | source_language | translated |
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|    |         |              |          |            |            |            |                       |                       |                       |                 |            |
+
+```
+>"source_language" corresponds to the source language of the quotes, in ISO 639 language codes.
+> 
+>"translated" corresponds to if the quotes are translated. 
+> 1 means true and 0 means false.
+> 
+>"question_1_translated", "question_2_translated", "question_3_translated"
+> corresponds to translated quotes of question1, question2, question3,
+> respectively. If the original quotes are not translated (which means the
+> original quotes are English), those fields are left blank.
+
+
 ## Summary
 
 In conclusion, I implemented a workflow that can extract quotes related to
