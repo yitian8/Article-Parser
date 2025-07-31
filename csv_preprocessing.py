@@ -18,7 +18,6 @@ output_file = 'output/dataset_medium.csv'
 with open(input_file, 'r', newline = '', encoding = 'utf-8', errors='ignore') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter = ',')
     fields = next(csv_reader)
-    cnt = 0
     for (index, row) in enumerate(csv_reader):
         if len(row) < 4:
             continue
@@ -35,8 +34,6 @@ with open(input_file, 'r', newline = '', encoding = 'utf-8', errors='ignore') as
         cnt += 1
         news_entry = Entry(id=id, content = content, company_name = company, entry_id = entry_id)
         entries.append(news_entry)
-        if (cnt >= 500):
-            break
 with open(output_file, 'w', encoding = 'utf-8') as csvfile:
     rows = []
     csvwriter = csv.writer(csvfile, delimiter = ',', dialect = 'unix')

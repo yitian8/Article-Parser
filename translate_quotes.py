@@ -5,6 +5,7 @@ from fsspec.asyn import loop
 from googletrans import Translator
 import csv
 from langdetect import detect
+
 async def translate_text(text, translator):
     result = await translator.translate(text, dest='en')
     return result.text
@@ -15,8 +16,8 @@ if __name__ == '__main__':
 
     logging.basicConfig(filename='output/test.log', format='%(asctime)s %(message)s', filemode='w')
     logger = logging.getLogger()
-    database = 'results/results_embedding.csv'
-    output = 'results/results_embedding_translated.csv'
+    database = 'results/results_prompt_2.csv'
+    output = 'results/results_prompt_2_translated.csv'
     rows = []
     with open(database, 'r', newline = '', encoding = 'utf-8') as file:
         csv_reader = csv.reader(file, delimiter=',')
@@ -32,7 +33,6 @@ if __name__ == '__main__':
         fields = next(csv_reader)
         for (i, row) in enumerate(csv_reader):
             content = row[1]
-            company_name = row[2]
             language = detect(content)
             attempts = 1
             while True:
@@ -50,3 +50,23 @@ if __name__ == '__main__':
                     logger.error('Connection error. Attempt #{}'.format(attempts))
             print('Processed entries: ' + str(i + 1) + '/' + str(length - 1))
             csv_writer.writerow(row)
+
+async def translate_row(row, translator):
+    content = row[1]
+    language = detect(content)
+    attempts = 1
+    while True:
+        try:
+            if language != 'en':
+                tasks = (translate_text(row[4], translator),
+                         translate_text(row[5], translator),
+                         translate_text(row[6], translator))
+                a, b, c = await asyncio.gather(*tasks)
+                result = [a, b, c, language, 1]
+                return result
+            else:
+                result = ['', '', '', 'en', 0]
+                return result
+        except:
+            attempts += 1
+            print('Connection error. Attempt #{}'.format(attempts))

@@ -23,8 +23,7 @@ def solve_fast(s):
     ind2 = s.rfind('\n')
     return s[ind1+1:ind2]
 
-def inference(prompt, user, temp = 1.0):
-    system_prompt_path = 'Prompts/system_prompt.txt'
+def inference(system_prompt_path, prompt, user, temp = 1.0):
     system_prompt = ''
     with open(system_prompt_path, 'r', newline='', encoding='utf-8') as system:
         system_prompt = system.read()
@@ -39,6 +38,8 @@ def inference(prompt, user, temp = 1.0):
     )
     s = response.choices[0].message.content
     return solve_fast(s)
+
+
 if __name__ == '__main__':
     database = 'output/output.csv'
     client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
